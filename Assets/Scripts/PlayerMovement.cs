@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float smoothInputSpeed = 0.2f; // time to reach maximum
 
     private bool jump = false;
+
+    private Transform cameraTransform;
+    [SerializeField] private Transform head;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -28,6 +32,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         
         charController = GetComponent<CharacterController>();
+        cameraTransform = Camera.main.transform;
     }
 
     // Update is called once per frame
@@ -37,6 +42,8 @@ public class PlayerMovement : MonoBehaviour
         currentInputDirection = Vector2.SmoothDamp(currentInputDirection, inputDirection,
             ref smoothInputVelocity, smoothInputSpeed);
         moveDirection = new Vector3(currentInputDirection.x, 0f, currentInputDirection.y);
+        moveDirection = cameraTransform.forward * moveDirection.z + cameraTransform.right * moveDirection.x;
+        moveDirection.y = 0f;
 
         MovePlayerCC();
     }
@@ -65,6 +72,10 @@ public class PlayerMovement : MonoBehaviour
         }
         charController.Move(moveDirection * (playerSpeed * Time.deltaTime));
         charController.Move(horizontalVelocity * Time.deltaTime);
+        
+        //var eulerAngles = cameraTransform.eulerAngles;
+        //transform.rotation = Quaternion.Euler(0f, eulerAngles.y, 0f);
+        //head.rotation = Quaternion.Euler(eulerAngles.x, eulerAngles.y, 0f);
     }
 
     public void Jump(InputAction.CallbackContext ctx)
